@@ -1,40 +1,50 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import os
 import logging
 import sys
+import time
+import location
+import signal
 
+#import local
+from display import *
+from station import *
+from menu import *
+
+# Init Logger
 logger = logging.getLogger("issense")
 handler = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(handler)
+logger.info("starting")
 
-
-
-import time
-from display import *
-import location
-from station import *
-import signal
-from menu import *
         
 DARKBLUE = [0,0,200]
 SPEED = 0.05
 
-logger.info("starting")
 
 class App:
     def __init__(self,sense):
         self.sense = sense
         self.sense.load_image("iss.png")
+
+        # Where are you ?
         self.position = location.locate()
         self.position_str = location.geocode(self.position)
+
+        # Stations list
         self.stationList = StationList()
         self.station = self.stationList.getStation('ISS (ZARYA)', self.position)
+        # and compute next transits for ISS (default)
         self.station.next_transits()
-        #self.printAll()
+
+        # Print debug info
+        self.printAll()
+
+        # Create root menu and display
         self.menu = Menu0(self)
         self.menu.start()
         self.menu.join()
