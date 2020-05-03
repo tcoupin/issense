@@ -21,9 +21,11 @@ class StationList:
         self.update()
 
     def update(self):
-        self._tles = self._loader.tle(URL_TLE, True)
+        self._tles = {}
+        for es in self._loader.tle_file(URL_TLE, True):
+            self._tles[es.name] = es
         self._ts = self._loader.timescale()
-        self._stations = list(self._tles.keys())
+        self._stations = self._tles.keys()
         LOGGER.info("Update StationList, found "+str(len(self._stations))+" items")
     
     def list(self):

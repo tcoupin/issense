@@ -11,6 +11,7 @@ import signal
 from display import *
 from station import *
 from menu import *
+from menustationchoice import *
 
 # Init Logger
 logger = logging.getLogger("issense")
@@ -22,14 +23,14 @@ logger.addHandler(handler)
 logger.info("starting")
 
         
-DARKBLUE = [0,0,200]
+DARKBLUE = [150,0,0]
 SPEED = 0.05
 
 
 class App:
     def __init__(self,sense):
         self.sense = sense
-        self.sense.load_image("iss.png")
+        self.sense.load_image("img/iss.png")
 
         # Where are you ?
         self.position = location.locate()
@@ -37,12 +38,10 @@ class App:
 
         # Stations list
         self.stationList = StationList()
-        self.station = self.stationList.getStation('ISS (ZARYA)', self.position)
-        # and compute next transits for ISS (default)
-        self.station.next_transits()
+        self.selectStation('ISS (ZARYA)')
 
         # Print debug info
-        self.printAll()
+        # self.printAll()
 
         # Create root menu and display
         self.menu = Menu0(self)
@@ -51,7 +50,7 @@ class App:
 
 
     def stop(self):
-        self.sense.show_message('Byebye', SPEED, DARKBLUE)
+        self.sense.show_message('Byebye')
         self.sense.stop()
         sys.exit(0)
 
@@ -68,24 +67,40 @@ class App:
 
     def printDate(self):
         date_str = now().strftime('%Y-%m-%d %H:%M')
-        self.sense.show_message("Date: "+date_str,SPEED,DARKBLUE)
+        self.sense.show_message("Date: "+date_str)
 
     def printLoc(self):
-        self.sense.show_message("Loc: "+self.position_str,SPEED,DARKBLUE)
+        self.sense.show_message("Loc: "+self.position_str)
 
     def printStation(self):
-        self.sense.show_message("Station: "+self.station.name,SPEED,DARKBLUE)
+        self.sense.show_message("Station: "+self.station.name)
 
     def printStationLoc(self):
-        self.sense.show_message("Is over: "+location.geocode(self.station.position,"country"),SPEED,DARKBLUE)
+        self.sense.show_message("Is over: "+location.geocode(self.station.position,"country"))
 
     def printNextTransit(self):
         next = (self.station.next_transits()[0].start - utcnow())
-        self.sense.show_message("Next transit in "+str(next.seconds//3600)+"h"+str((next.seconds//60)%60)+"min"+str(next.seconds%60)+"s",SPEED,DARKBLUE)
+        self.sense.show_message("Next transit in "+str(next.seconds//3600)+"h"+str((next.seconds//60)%60)+"min"+str(next.seconds%60)+"s")
+
+    def selectStation(self, name):
+        wait = self.sense.waiting()
+        self.station = self.stationList.getStation(name, self.position)
+        # and compute next transits 
+        self.station.next_transits()
+        wait.stop()
+        self.printStation()
+        self.printStationLoc()
+        self.printNextTransit()
+      
+    def choiceStation(self):
+        self.sense.show_message("Select station")
+        menu = MenuStationChoice(self)
+        menu.start()
+        menu.join()
 
 
 def main():
-    app = App(Display())
+    app = App(Display(SPEED, DARKBLUE))
     app.stop()
 
 # Menu

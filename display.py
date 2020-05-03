@@ -6,9 +6,12 @@ from random import randint
 
 class Display(SenseHat):
 
-    def __init__(self):
+    def __init__(self, speed, color):
         SenseHat.__init__(self)
         self.__rotation_delta = 0
+
+        self.speed = speed
+        self.color = color
 
 
         self.__autorotate = Autorotate(self)
@@ -17,9 +20,14 @@ class Display(SenseHat):
         self.__autolight = Autolight(self)
         self.__autolight.start()
     
-    def show_message(self, *args):
+    def show_message(self, text):
         self.__rotation_delta = 90
-        SenseHat.show_message(self,*args)
+        SenseHat.show_message(self, text, self.speed, self.color)
+        self.__rotation_delta = 0
+    
+    def show_letter(self, letter):
+        self.__rotation_delta = 90
+        SenseHat.show_letter(self, letter, self.color)
         self.__rotation_delta = 0
     
     @property
